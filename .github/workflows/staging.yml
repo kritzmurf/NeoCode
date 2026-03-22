@@ -1,0 +1,70 @@
+name: Staging
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  note_linting:
+    name: Note Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for TODO/FIXME/HACK notes
+        run: |
+          NOTES=$(rg -n "TODO|FIXME|HACK" lua/ plugin/ --type lua || true)
+          if [ -n "$NOTES" ]; then
+            echo "::error::Development notes must be resolved before release:"
+            echo "$NOTES"
+            exit 1
+          fi
+
+  lint:
+    name: Lua Lint
+    runs-on: ubuntu-latest
+    needs: [note_linting]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install luacheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.1 luarocks
+          sudo luarocks install luacheck
+
+      - name: Run luacheck
+        run: luacheck lua/ plugin/ --globals vim --no-max-line-length
+
+  test:
+    name: Plugin Load Test
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Neovim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: v0.10.4
+
+      - name: Verify plugin loads
+        run: |
+          nvim --headless -u NONE \
+            --cmd "set runtimepath+=$(pwd)" \
+            -c "lua require('neocode').setup({}); print('setup: OK')" \
+            -c "lua local s = require('neocode.study'); print('plans: ' .. table.concat(s.available_plans(), ', '))" \
+            -c "lua local p = require('neocode.study').load_plan('blind75'); print(p.name .. ': ' .. #p.categories .. ' categories')" \
+            -c "lua local p = require('neocode.study').load_plan('neetcode150'); print(p.name .. ': ' .. #p.categories .. ' categories')" \
+            -c "lua local p = require('neocode.study').load_plan('grind75'); print(p.name .. ': ' .. #p.categories .. ' categories')" \
+            -c "q"
+
+      - name: Verify command registration
+        run: |
+          nvim --headless -u NONE \
+            --cmd "set runtimepath+=$(pwd)" \
+            -c "source plugin/neocode.lua" \
+            -c "lua require('neocode').setup({})" \
+            -c "NeoCode plan list" \
+            -c "q"
