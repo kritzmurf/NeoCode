@@ -20,17 +20,70 @@ end
 
 subcommands.plan = function(args)
   local config = require("neocode").config
-  local study = require("neocode.study")
-
   local slug = args[1] or config.active_plan
 
   if slug == "list" then
+    local study = require("neocode.study")
     local available = study.available_plans()
     utils.notify("Available plans: " .. table.concat(available, ", "))
     return
   end
 
-  study.print_summary(slug)
+  local plan_view = require("neocode.ui.plan_view")
+  plan_view.open(slug)
+end
+
+subcommands.open = function(args)
+  local slug = args[1]
+  if not slug then
+    utils.notify("Usage: :NeoCode open <problem-slug>", vim.log.levels.WARN)
+    return
+  end
+  local ui = require("neocode.ui")
+  ui.open_problem(slug)
+end
+
+subcommands.close = function()
+  require("neocode.ui").close()
+end
+
+subcommands.next = function()
+  local config = require("neocode").config
+  local study = require("neocode.study")
+  local problem = study.next_unsolved(config.active_plan)
+  if not problem then
+    utils.notify("All problems solved in " .. config.active_plan .. "!")
+    return
+  end
+  local ui = require("neocode.ui")
+  ui.open_problem(problem.slug, config.active_plan)
+end
+
+subcommands.test = function()
+  local ui_state = require("neocode.ui").get_state()
+  if not ui_state.current_slug then
+    utils.notify("No problem open. Use :Neocode open <slug> first.", vim.log.levels.WARN)
+    return
+  end
+  local config = require("neocode").config
+  local runner = require("neocode.runner")
+  local results_ui = require("neocode.ui.results")
+  runner.run(ui_state.current_slug, config.lang, function(results, _err)
+    if results then
+      results_ui.show(results)
+    end
+  end)
+end
+
+subcommands.lang = function(args)
+  local lang = args[1]
+  if not lang then
+    local config = require("neocode").config
+    utils.notify("Current language: " .. config.lang)
+    return
+  end
+  require("neocode").config.lang = lang
+  utils.notify("Language set to: " .. lang)
 end
 
 subcommands.fetch = function(args)
@@ -72,9 +125,14 @@ function M.dispatch(opts)
 
   if not subcmd then
     utils.notify(
-      "Usage: :NeoCode <command>\n"
+      "Usage: :Neocode <command>\n"
         .. "  auth     - validate LeetCode session\n"
         .. "  plan     - browse study plans\n"
+        .. "  open     - open a problem workspace\n"
+        .. "  close    - close workspace\n"
+        .. "  next     - next unsolved problem\n"
+        .. "  test     - run local tests\n"
+        .. "  lang     - show/set language\n"
         .. "  fetch    - fetch a problem by slug",
       vim.log.levels.INFO
     )
