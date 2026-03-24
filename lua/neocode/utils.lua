@@ -1,7 +1,7 @@
 local M = {}
 
 function M.notify(msg, level)
-  vim.notify("NeoCode: " .. msg, level or vim.log.levels.INFO)
+  vim.notify("Neocode: " .. msg, level or vim.log.levels.INFO)
 end
 
 function M.read_buf_content(bufnr)

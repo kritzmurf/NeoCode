@@ -29,7 +29,7 @@ Plugins like [leetcode.nvim](https://github.com/kawre/leetcode.nvim) handle the 
   config = function()
     require("neocode").setup({})
   end,
-  cmd = "NeoCode",
+  cmd = "Neocode",
 }
 ```
 
@@ -48,41 +48,41 @@ LEETCODE_SESSION=<your session value>
 csrftoken=<your csrf value>
 ```
 
-4. Verify with `:NeoCode auth`
+4. Verify with `:Neocode auth`
 
 ## Usage
 
 ### Study Plans
 
 ```vim
-:NeoCode plan blind75       " Browse the Blind 75
-:NeoCode plan neetcode150   " Browse the NeetCode 150
-:NeoCode plan grind75       " Browse the Grind 75
-:NeoCode plan list          " List available plans
+:Neocode plan blind75       " Browse the Blind 75
+:Neocode plan neetcode150   " Browse the NeetCode 150
+:Neocode plan grind75       " Browse the Grind 75
+:Neocode plan list          " List available plans
 ```
 
 ### Problem Workflow
 
 ```vim
-:NeoCode open two-sum       " Open a problem (description + editor split)
-:NeoCode next               " Next unsolved problem in active plan
-:NeoCode close              " Close workspace
-:NeoCode lang python3       " Switch language
+:Neocode open two-sum       " Open a problem (description + editor split)
+:Neocode next               " Next unsolved problem in active plan
+:Neocode close              " Close workspace
+:Neocode lang python3       " Switch language
 ```
 
 ### Testing & Submission
 
 ```vim
-:NeoCode test               " Run locally (instant, offline)
-:NeoCode run                " Run on LeetCode server
-:NeoCode submit             " Submit to LeetCode
+:Neocode test               " Run locally (instant, offline)
+:Neocode run                " Run on LeetCode server
+:Neocode submit             " Submit to LeetCode
 ```
 
 ### Progress
 
 ```vim
-:NeoCode progress           " Study plan progress
-:NeoCode stats              " LeetCode stats dashboard
+:Neocode progress           " Study plan progress
+:Neocode stats              " LeetCode stats dashboard
 ```
 
 ## Configuration
@@ -129,9 +129,9 @@ Buffer-local keymaps, only active in NeoCode windows:
 - [x] LeetCode authentication (cookie-based)
 - [x] Bundled study plans (Blind 75, NeetCode 150, Grind 75)
 - [x] Progress tracking
-- [ ] Study plan browser UI
-- [ ] Split workspace (description + editor)
-- [ ] Local test runner (Python)
+- [x] Study plan browser UI
+- [x] Split workspace (description + editor)
+- [x] Local test runner (Python)
 - [ ] LeetCode submission + result polling
 - [ ] Telescope integration
 - [ ] Stats dashboard

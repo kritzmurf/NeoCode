@@ -1,7 +1,7 @@
 local M = {}
 
 M.check = function()
-  vim.health.start("NeoCode")
+  vim.health.start("Neocode")
 
   -- Check Neovim version
   if vim.fn.has("nvim-0.10") == 1 then

@@ -56,6 +56,9 @@ jobs:
             -c "lua local p = require('neocode.study').load_plan('blind75'); print(p.name .. ': ' .. #p.categories .. ' categories')" \
             -c "lua local p = require('neocode.study').load_plan('neetcode150'); print(p.name .. ': ' .. #p.categories .. ' categories')" \
             -c "lua local p = require('neocode.study').load_plan('grind75'); print(p.name .. ': ' .. #p.categories .. ' categories')" \
+            -c "lua require('neocode.ui'); print('ui: OK')" \
+            -c "lua require('neocode.ui.html'); print('html: OK')" \
+            -c "lua require('neocode.runner'); print('runner: OK')" \
             -c "q"
 
       - name: Verify command registration
@@ -64,5 +67,5 @@ jobs:
             --cmd "set runtimepath+=$(pwd)" \
             -c "source plugin/neocode.lua" \
             -c "lua require('neocode').setup({})" \
-            -c "NeoCode plan list" \
+            -c "Neocode plan list" \
             -c "q"
