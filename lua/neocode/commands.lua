@@ -36,7 +36,7 @@ end
 subcommands.open = function(args)
   local slug = args[1]
   if not slug then
-    utils.notify("Usage: :NeoCode open <problem-slug>", vim.log.levels.WARN)
+    utils.notify("Usage: :Neocode open <problem-slug>", vim.log.levels.WARN)
     return
   end
   local ui = require("neocode.ui")
@@ -75,6 +75,68 @@ subcommands.test = function()
   end)
 end
 
+subcommands.run = function()
+  local ui_state = require("neocode.ui").get_state()
+  if not ui_state.current_slug then
+    utils.notify("No problem open. Use :Neocode open <slug> first.", vim.log.levels.WARN)
+    return
+  end
+  local config = require("neocode").config
+  local submit = require("neocode.api.submit")
+  local results_ui = require("neocode.ui.results")
+  local editor = require("neocode.ui.editor")
+  local code = require("neocode.storage").read_file(
+    editor.get_solution_path(ui_state.current_slug, config.lang)
+  )
+  if not code then return end
+  submit.run_remote(ui_state.current_slug, config.lang, code, function(result, _err)
+    if result then
+      results_ui.show_submission(result, ui_state.current_plan)
+    end
+  end)
+end
+
+subcommands.submit = function()
+  local ui_state = require("neocode.ui").get_state()
+  if not ui_state.current_slug then
+    utils.notify("No problem open. Use :Neocode open <slug> first.", vim.log.levels.WARN)
+    return
+  end
+  local config = require("neocode").config
+  local submit = require("neocode.api.submit")
+  local results_ui = require("neocode.ui.results")
+  local progress = require("neocode.study.progress")
+  local editor = require("neocode.ui.editor")
+  local code = require("neocode.storage").read_file(
+    editor.get_solution_path(ui_state.current_slug, config.lang)
+  )
+  if not code then return end
+  submit.submit(ui_state.current_slug, config.lang, code, function(result, _err)
+    if result then
+      if result.status_msg == "Accepted" and ui_state.current_plan then
+        progress.mark_solved(ui_state.current_plan, ui_state.current_slug)
+      elseif ui_state.current_plan then
+        progress.mark_attempted(ui_state.current_plan, ui_state.current_slug)
+      end
+      results_ui.show_submission(result, ui_state.current_plan)
+    end
+  end)
+end
+
+subcommands.progress = function()
+  local config = require("neocode").config
+  local study = require("neocode.study")
+  local summary = study.get_plan_summary(config.active_plan)
+  if not summary then return end
+  utils.notify(string.format(
+    "%s: %d/%d solved (%d%%)",
+    summary.name,
+    summary.stats.solved,
+    summary.stats.total,
+    summary.stats.total > 0 and math.floor(summary.stats.solved / summary.stats.total * 100) or 0
+  ))
+end
+
 subcommands.lang = function(args)
   local lang = args[1]
   if not lang then
@@ -89,7 +151,7 @@ end
 subcommands.fetch = function(args)
   local slug = args[1]
   if not slug then
-    utils.notify("Usage: :NeoCode fetch <problem-slug>", vim.log.levels.WARN)
+    utils.notify("Usage: :Neocode fetch <problem-slug>", vim.log.levels.WARN)
     return
   end
 
@@ -132,6 +194,9 @@ function M.dispatch(opts)
         .. "  close    - close workspace\n"
         .. "  next     - next unsolved problem\n"
         .. "  test     - run local tests\n"
+        .. "  run      - run on LeetCode server\n"
+        .. "  submit   - submit to LeetCode\n"
+        .. "  progress - show plan progress\n"
         .. "  lang     - show/set language\n"
         .. "  fetch    - fetch a problem by slug",
       vim.log.levels.INFO
@@ -177,6 +242,22 @@ function M.complete(_, cmd_line, _)
     end
 
     return available
+  end
+
+  if parts[2] == "open" and n <= 3 then
+    local config = require("neocode").config
+    local cache_dir = config.storage_dir .. "/cache/questions"
+    local files = vim.fn.glob(cache_dir .. "/*.json", false, true)
+    local slugs = {}
+    for _, f in ipairs(files) do
+      table.insert(slugs, vim.fn.fnamemodify(f, ":t:r"))
+    end
+    if n == 3 then
+      return vim.tbl_filter(function(s)
+        return s:find(parts[3], 1, true) == 1
+      end, slugs)
+    end
+    return slugs
   end
 
   return {}
