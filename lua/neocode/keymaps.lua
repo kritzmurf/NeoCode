@@ -43,6 +43,54 @@ function M.set_editor_keymaps(bufnr)
       end
     end)
   end, opts)
+
+  -- Run on LeetCode (remote test)
+  vim.keymap.set("n", "<leader>lcr", function()
+    local ui_state = require("neocode.ui").get_state()
+    if not ui_state.current_slug then
+      return
+    end
+    local config = require("neocode").config
+    local submit = require("neocode.api.submit")
+    local results_ui = require("neocode.ui.results")
+    local editor = require("neocode.ui.editor")
+    local code = require("neocode.storage").read_file(
+      editor.get_solution_path(ui_state.current_slug, config.lang)
+    )
+    if not code then return end
+    submit.run_remote(ui_state.current_slug, config.lang, code, function(result, _err)
+      if result then
+        results_ui.show_submission(result, ui_state.current_plan)
+      end
+    end)
+  end, opts)
+
+  -- Submit to LeetCode
+  vim.keymap.set("n", "<leader>lcs", function()
+    local ui_state = require("neocode.ui").get_state()
+    if not ui_state.current_slug then
+      return
+    end
+    local config = require("neocode").config
+    local submit = require("neocode.api.submit")
+    local results_ui = require("neocode.ui.results")
+    local progress = require("neocode.study.progress")
+    local editor = require("neocode.ui.editor")
+    local code = require("neocode.storage").read_file(
+      editor.get_solution_path(ui_state.current_slug, config.lang)
+    )
+    if not code then return end
+    submit.submit(ui_state.current_slug, config.lang, code, function(result, _err)
+      if result then
+        if result.status_msg == "Accepted" and ui_state.current_plan then
+          progress.mark_solved(ui_state.current_plan, ui_state.current_slug)
+        elseif ui_state.current_plan then
+          progress.mark_attempted(ui_state.current_plan, ui_state.current_slug)
+        end
+        results_ui.show_submission(result, ui_state.current_plan)
+      end
+    end)
+  end, opts)
 end
 
 return M

@@ -1,3 +1,5 @@
+local utils = require("neocode.utils")
+
 local M = {}
 
 local state = {
@@ -32,7 +34,8 @@ function M.open_problem(slug, plan_slug)
   ensure_auth(function()
     local problems = require("neocode.api.problems")
     problems.fetch_question(slug, function(question, err)
-      if err then
+      if err or not question or type(question) ~= "table" then
+        utils.notify("Could not load problem: " .. (err or slug), vim.log.levels.ERROR)
         return
       end
       M.open_workspace(question, plan_slug)
