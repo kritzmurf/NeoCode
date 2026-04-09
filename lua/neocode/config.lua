@@ -8,6 +8,7 @@ M.defaults = {
   active_plan = "blind75",
   ui = {
     description_width = 0.4,
+    plan_width = 40,
   },
   keys = {},
 }
