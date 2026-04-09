@@ -8,6 +8,14 @@ function M.setup(opts)
 
   local storage = require("neocode.storage")
   storage.ensure_dir(M.config.storage_dir)
+
+  -- Register user-provided custom plans
+  if M.config.plans then
+    local study = require("neocode.study")
+    for slug, source in pairs(M.config.plans) do
+      study.register_plan(slug, source)
+    end
+  end
 end
 
 return M

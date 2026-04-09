@@ -21,7 +21,14 @@ M.check = function()
   if vim.fn.executable("python3") == 1 then
     vim.health.ok("python3 found (local test runner)")
   else
-    vim.health.warn("python3 not found (needed for local test runner in Phase 3)")
+    vim.health.warn("python3 not found (needed for local test runner)")
+  end
+
+  -- Check xdg-open (optional, for :NeoCode login browser opening)
+  if vim.fn.executable("xdg-open") == 1 then
+    vim.health.ok("xdg-open found (can open browser during :NeoCode login)")
+  else
+    vim.health.info("xdg-open not found (you can still open your browser manually)")
   end
 
   -- Check cookie file
@@ -53,10 +60,9 @@ M.check = function()
   else
     vim.health.warn(
       "Cookie file not found at: " .. config.cookie_path .. "\n"
-        .. "Create it with:\n"
+        .. "Run :NeoCode login to set up authentication, or create the file manually:\n"
         .. "  LEETCODE_SESSION=<your session cookie>\n"
-        .. "  csrftoken=<your csrf token>\n"
-        .. "Get these from browser DevTools > Application > Cookies after logging into leetcode.com"
+        .. "  csrftoken=<your csrf token>"
     )
   end
 

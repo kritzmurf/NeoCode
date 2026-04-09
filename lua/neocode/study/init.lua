@@ -3,28 +3,51 @@ local utils = require("neocode.utils")
 
 local M = {}
 
-local plans = {
+local bundled_plans = {
   blind75 = "neocode.study.plans.blind75",
   neetcode150 = "neocode.study.plans.neetcode150",
   grind75 = "neocode.study.plans.grind75",
 }
 
+local custom_plans = {}
+
+function M.register_plan(slug, source)
+  custom_plans[slug] = source
+end
+
+function M.unregister_plan(slug)
+  custom_plans[slug] = nil
+end
+
 function M.available_plans()
   local result = {}
-  for slug, _ in pairs(plans) do
+  local seen = {}
+  for slug, _ in pairs(bundled_plans) do
     table.insert(result, slug)
+    seen[slug] = true
+  end
+  for slug, _ in pairs(custom_plans) do
+    if not seen[slug] then
+      table.insert(result, slug)
+    end
   end
   table.sort(result)
   return result
 end
 
 function M.load_plan(slug)
-  local module_path = plans[slug]
-  if not module_path then
+  local source = custom_plans[slug] or bundled_plans[slug]
+  if not source then
     utils.notify("Unknown plan: " .. slug .. ". Available: " .. table.concat(M.available_plans(), ", "), vim.log.levels.ERROR)
     return nil
   end
-  local ok, plan = pcall(require, module_path)
+
+  -- Source is a module path (string) or a plan table directly
+  if type(source) == "table" then
+    return source
+  end
+
+  local ok, plan = pcall(require, source)
   if not ok then
     utils.notify("Failed to load plan: " .. slug, vim.log.levels.ERROR)
     return nil

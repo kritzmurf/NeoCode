@@ -4,6 +4,12 @@ local M = {}
 
 local subcommands = {}
 
+subcommands.login = function()
+  local config = require("neocode").config
+  local login = require("neocode.auth.login")
+  login.run(config)
+end
+
 subcommands.auth = function()
   local config = require("neocode").config
   local auth = require("neocode.auth")
@@ -19,8 +25,7 @@ subcommands.auth = function()
 end
 
 subcommands.plan = function(args)
-  local config = require("neocode").config
-  local slug = args[1] or config.active_plan
+  local slug = args[1]
 
   if slug == "list" then
     local study = require("neocode.study")
@@ -30,7 +35,7 @@ subcommands.plan = function(args)
   end
 
   local plan_view = require("neocode.ui.plan_view")
-  plan_view.open(slug)
+  plan_view.toggle({ expand = slug })
 end
 
 subcommands.open = function(args)
@@ -188,6 +193,7 @@ function M.dispatch(opts)
   if not subcmd then
     utils.notify(
       "Usage: :Neocode <command>\n"
+        .. "  login    - interactive login to LeetCode\n"
         .. "  auth     - validate LeetCode session\n"
         .. "  plan     - browse study plans\n"
         .. "  open     - open a problem workspace\n"
