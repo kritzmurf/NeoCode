@@ -140,6 +140,19 @@ function M.to_lines(html)
 
   flush()
 
+  -- Split any lines that contain embedded newlines (e.g. from &#10; entities)
+  local clean = {}
+  for _, line in ipairs(lines) do
+    if line:find("\n", 1, true) then
+      for sub in (line .. "\n"):gmatch("([^\n]*)\n") do
+        table.insert(clean, sub)
+      end
+    else
+      table.insert(clean, line)
+    end
+  end
+  lines = clean
+
   while #lines > 0 and lines[1] == "" do
     table.remove(lines, 1)
   end

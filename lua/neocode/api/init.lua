@@ -23,7 +23,7 @@ end
 
 function M.graphql(query, variables, callback)
   if not M.is_authenticated() then
-    utils.notify("Not authenticated. Run :Neocode auth first.", vim.log.levels.ERROR)
+    utils.notify("Not authenticated. Run :neocode auth first.", vim.log.levels.ERROR)
     return
   end
 
@@ -84,7 +84,7 @@ end
 
 function M.rest(method, path, body, extra_headers, callback)
   if not M.is_authenticated() then
-    utils.notify("Not authenticated. Run :Neocode auth first.", vim.log.levels.ERROR)
+    utils.notify("Not authenticated. Run :neocode auth first.", vim.log.levels.ERROR)
     return
   end
 

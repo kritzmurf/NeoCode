@@ -4,7 +4,7 @@ end
 vim.g.loaded_neocode = true
 
 if vim.fn.has("nvim-0.10") ~= 1 then
-  vim.notify("Neocode requires Neovim >= 0.10", vim.log.levels.ERROR)
+  vim.notify("neocode requires Neovim >= 0.10", vim.log.levels.ERROR)
   return
 end
 
@@ -15,5 +15,5 @@ end, {
   complete = function(arg_lead, cmd_line, cursor_pos)
     return require("neocode.commands").complete(arg_lead, cmd_line, cursor_pos)
   end,
-  desc = "Neocode - LeetCode Study System",
+  desc = "neocode - LeetCode study system",
 })
