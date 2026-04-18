@@ -9,6 +9,7 @@ local state = {
   editor_win = nil,
   current_slug = nil,
   current_plan = nil,
+  prev_bufnr = nil,
 }
 
 local function ensure_auth(callback)
@@ -55,6 +56,9 @@ function M.open_workspace(question, plan_slug)
   state.current_slug = question.titleSlug
   state.current_plan = plan_slug
 
+  -- Remember the buffer we're replacing so we can restore on close
+  state.prev_bufnr = vim.api.nvim_get_current_buf()
+
   -- Create left split for description
   vim.cmd("vsplit")
   state.desc_win = vim.api.nvim_get_current_win()
@@ -88,18 +92,35 @@ function M.open_workspace(question, plan_slug)
 end
 
 function M.close()
+  -- Close description pane
   if state.desc_bufnr and vim.api.nvim_buf_is_valid(state.desc_bufnr) then
     vim.api.nvim_buf_delete(state.desc_bufnr, { force = true })
   end
   if state.desc_win and vim.api.nvim_win_is_valid(state.desc_win) then
     vim.api.nvim_win_close(state.desc_win, true)
   end
+
+  -- Restore editor window to previous buffer, or a clean empty buffer
+  if state.editor_win and vim.api.nvim_win_is_valid(state.editor_win) then
+    vim.api.nvim_set_current_win(state.editor_win)
+    local config = require("neocode").config
+    if state.prev_bufnr and vim.api.nvim_buf_is_valid(state.prev_bufnr) then
+      vim.api.nvim_win_set_buf(state.editor_win, state.prev_bufnr)
+    else
+      vim.cmd("enew")
+    end
+    if config.on_close then
+      config.on_close()
+    end
+  end
+
   state.desc_bufnr = nil
   state.editor_bufnr = nil
   state.desc_win = nil
   state.editor_win = nil
   state.current_slug = nil
   state.current_plan = nil
+  state.prev_bufnr = nil
 end
 
 function M.get_state()

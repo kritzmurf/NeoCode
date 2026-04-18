@@ -11,6 +11,7 @@ M.defaults = {
     plan_width = 40,
   },
   keys = {},
+  on_close = nil,
 }
 
 return M

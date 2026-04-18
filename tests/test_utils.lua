@@ -22,7 +22,7 @@ local T = new_set({
 
 T["notify"] = new_set()
 
-T["notify"]["prepends Neocode prefix"] = function()
+T["notify"]["prepends neocode prefix"] = function()
   child.lua([[
     _G.last_msg = nil
     _G.last_level = nil
@@ -34,7 +34,7 @@ T["notify"]["prepends Neocode prefix"] = function()
     _G.utils.notify("test message")
     vim.notify = orig
   ]])
-  eq(child.lua_get("_G.last_msg"), "Neocode: test message")
+  eq(child.lua_get("_G.last_msg"), "neocode: test message")
 end
 
 T["notify"]["defaults to INFO level"] = function()
