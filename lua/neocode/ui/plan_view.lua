@@ -1,10 +1,8 @@
 local progress = require("neocode.study.progress")
 local utils = require("neocode.utils")
+local icons = require("neocode.ui.icons")
 
 local M = {}
-
-local ICON_CLOSED = "\u{e5ff}"   -- nf-custom-folder
-local ICON_OPEN = "\u{e5fe}"     -- nf-custom-folder_open
 
 local state = {
   bufnr = nil,
@@ -37,14 +35,15 @@ local function difficulty_label(diff)
 end
 
 local function status_icon(plan_slug, problem_slug)
+  local ic = icons.get()
   if progress.is_solved(plan_slug, problem_slug) then
-    return "[x]"
+    return ic.solved
   end
   local prog = progress.load(plan_slug)
   if prog[problem_slug] and prog[problem_slug].attempts and prog[problem_slug].attempts > 0 then
-    return "[~]"
+    return ic.attempted
   end
-  return "[ ]"
+  return ic.unsolved
 end
 
 local function category_stats(plan_slug, category)
@@ -91,8 +90,9 @@ function M.render()
     local summary = state.summaries[slug]
     if not summary then goto continue_plan end
 
+    local ic = icons.get()
     local plan_collapsed = is_plan_collapsed(slug)
-    local icon = plan_collapsed and ICON_CLOSED or ICON_OPEN
+    local icon = plan_collapsed and ic.folder_closed or ic.folder_open
 
     -- Plan row
     local plan_line = string.format("  %s %s", icon, summary.name)
@@ -109,7 +109,7 @@ function M.render()
       for cat_idx, category in ipairs(plan.categories) do
         local solved, total = category_stats(slug, category)
         local cat_collapsed = is_category_collapsed(slug, cat_idx)
-        local cat_icon = cat_collapsed and ICON_CLOSED or ICON_OPEN
+        local cat_icon = cat_collapsed and ic.folder_closed or ic.folder_open
 
         -- Category row
         local cat_line = string.format("    %s %s", cat_icon, category.name)

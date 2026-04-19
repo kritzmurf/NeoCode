@@ -1,15 +1,18 @@
 local M = {}
 
+local function keys()
+  return require("neocode").config.keys
+end
+
 function M.set_description_keymaps(bufnr)
+  local k = keys()
   local opts = { buffer = bufnr, silent = true }
 
-  -- Close workspace
-  vim.keymap.set("n", "q", function()
+  vim.keymap.set("n", k.desc_close, function()
     require("neocode.ui").close()
   end, opts)
 
-  -- Navigate to editor pane
-  vim.keymap.set("n", "<C-l>", function()
+  vim.keymap.set("n", k.desc_to_editor, function()
     local ui_state = require("neocode.ui").get_state()
     if ui_state.editor_win and vim.api.nvim_win_is_valid(ui_state.editor_win) then
       vim.api.nvim_set_current_win(ui_state.editor_win)
@@ -18,18 +21,17 @@ function M.set_description_keymaps(bufnr)
 end
 
 function M.set_editor_keymaps(bufnr)
+  local k = keys()
   local opts = { buffer = bufnr, silent = true }
 
-  -- Navigate to description pane
-  vim.keymap.set("n", "<C-h>", function()
+  vim.keymap.set("n", k.editor_to_desc, function()
     local ui_state = require("neocode.ui").get_state()
     if ui_state.desc_win and vim.api.nvim_win_is_valid(ui_state.desc_win) then
       vim.api.nvim_set_current_win(ui_state.desc_win)
     end
   end, opts)
 
-  -- Run local tests
-  vim.keymap.set("n", "<leader>lct", function()
+  vim.keymap.set("n", k.test, function()
     local ui_state = require("neocode.ui").get_state()
     if not ui_state.current_slug then
       return
@@ -44,8 +46,7 @@ function M.set_editor_keymaps(bufnr)
     end)
   end, opts)
 
-  -- Run on LeetCode (remote test)
-  vim.keymap.set("n", "<leader>lcr", function()
+  vim.keymap.set("n", k.run, function()
     local ui_state = require("neocode.ui").get_state()
     if not ui_state.current_slug then
       return
@@ -65,8 +66,7 @@ function M.set_editor_keymaps(bufnr)
     end)
   end, opts)
 
-  -- Submit to LeetCode
-  vim.keymap.set("n", "<leader>lcs", function()
+  vim.keymap.set("n", k.submit, function()
     local ui_state = require("neocode.ui").get_state()
     if not ui_state.current_slug then
       return

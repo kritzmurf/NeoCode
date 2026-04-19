@@ -17,6 +17,7 @@ function M.fetch_question(slug, callback)
     return
   end
 
+  utils.notify("Fetching " .. slug .. "...")
   api.graphql(queries.QUESTION_DATA, { titleSlug = slug }, function(data, err)
     if err then
       if callback then

@@ -5,9 +5,59 @@ local state = {
   win = nil,
 }
 
-function M.show(results)
+local ns = vim.api.nvim_create_namespace("neocode_results")
+
+local FLOAT_WIDTH = 60
+
+local function open_float(lines, opts)
+  opts = opts or {}
   M.close()
 
+  -- Add footer banner for interactive floats
+  if not opts.no_footer then
+    local footer = "  q : close window"
+    footer = footer .. string.rep(" ", FLOAT_WIDTH - #footer)
+    table.insert(lines, footer)
+  end
+
+  state.bufnr = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(state.bufnr, 0, -1, false, lines)
+  vim.bo[state.bufnr].modifiable = false
+  vim.bo[state.bufnr].buftype = "nofile"
+  vim.bo[state.bufnr].filetype = "neocode-results"
+
+  -- Highlight footer line
+  if not opts.no_footer then
+    vim.api.nvim_buf_add_highlight(state.bufnr, ns, "Visual", #lines - 1, 0, -1)
+  end
+
+  local height = math.min(#lines, 25)
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - FLOAT_WIDTH) / 2)
+
+  state.win = vim.api.nvim_open_win(state.bufnr, not opts.no_focus, {
+    relative = "editor",
+    width = FLOAT_WIDTH,
+    height = height,
+    row = row,
+    col = col,
+    style = "minimal",
+    border = "rounded",
+  })
+
+  if not opts.no_focus then
+    local buf_opts = { buffer = state.bufnr, silent = true }
+    vim.keymap.set("n", "q", function() M.close() end, buf_opts)
+    vim.keymap.set("n", "<Esc>", function() M.close() end, buf_opts)
+  end
+end
+
+function M.show_loading(msg)
+  local lines = { "", "  " .. msg, "" }
+  open_float(lines, { no_focus = true, no_footer = true })
+end
+
+function M.show(results)
   local lines = {}
   local passed = 0
   local total = #results
@@ -41,38 +91,10 @@ function M.show(results)
     table.insert(lines, "")
   end
 
-  -- Create buffer
-  state.bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(state.bufnr, 0, -1, false, lines)
-  vim.bo[state.bufnr].modifiable = false
-  vim.bo[state.bufnr].buftype = "nofile"
-  vim.bo[state.bufnr].filetype = "neocode-results"
-
-  -- Float dimensions
-  local width = 60
-  local height = math.min(#lines, 25)
-  local row = math.floor((vim.o.lines - height) / 2)
-  local col = math.floor((vim.o.columns - width) / 2)
-
-  state.win = vim.api.nvim_open_win(state.bufnr, true, {
-    relative = "editor",
-    width = width,
-    height = height,
-    row = row,
-    col = col,
-    style = "minimal",
-    border = "rounded",
-  })
-
-  -- Close on q or Esc
-  local opts = { buffer = state.bufnr, silent = true }
-  vim.keymap.set("n", "q", function() M.close() end, opts)
-  vim.keymap.set("n", "<Esc>", function() M.close() end, opts)
+  open_float(lines)
 end
 
 function M.show_submission(result, plan_slug)
-  M.close()
-
   local lines = {}
   local status = result.status_msg or "Unknown"
 
@@ -146,30 +168,7 @@ function M.show_submission(result, plan_slug)
     end
   end
 
-  state.bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_lines(state.bufnr, 0, -1, false, lines)
-  vim.bo[state.bufnr].modifiable = false
-  vim.bo[state.bufnr].buftype = "nofile"
-  vim.bo[state.bufnr].filetype = "neocode-results"
-
-  local width = 60
-  local height = math.min(#lines, 25)
-  local row = math.floor((vim.o.lines - height) / 2)
-  local col = math.floor((vim.o.columns - width) / 2)
-
-  state.win = vim.api.nvim_open_win(state.bufnr, true, {
-    relative = "editor",
-    width = width,
-    height = height,
-    row = row,
-    col = col,
-    style = "minimal",
-    border = "rounded",
-  })
-
-  local opts = { buffer = state.bufnr, silent = true }
-  vim.keymap.set("n", "q", function() M.close() end, opts)
-  vim.keymap.set("n", "<Esc>", function() M.close() end, opts)
+  open_float(lines)
 end
 
 function M.close()
