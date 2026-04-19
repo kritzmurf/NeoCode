@@ -92,6 +92,12 @@ function M.open_workspace(question, plan_slug)
 end
 
 function M.close()
+  -- Close plan view if open
+  local plan_view = require("neocode.ui.plan_view")
+  if plan_view.is_open() then
+    plan_view.close()
+  end
+
   -- Close description pane
   if state.desc_bufnr and vim.api.nvim_buf_is_valid(state.desc_bufnr) then
     vim.api.nvim_buf_delete(state.desc_bufnr, { force = true })

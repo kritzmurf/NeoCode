@@ -67,9 +67,14 @@ function M.run(slug, lang_slug, callback)
       os.remove(harness_path)
 
       if obj.code ~= 0 and (not obj.stdout or obj.stdout == "") then
-        utils.notify("Test runner error:\n" .. (obj.stderr or "unknown error"), vim.log.levels.ERROR)
+        local err = obj.stderr or "unknown error"
+        if err:match("IndentationError") or err:match("SyntaxError") then
+          utils.notify("Solution has syntax errors. Write your solution before running tests.", vim.log.levels.WARN)
+        else
+          utils.notify("Test runner error:\n" .. err, vim.log.levels.ERROR)
+        end
         if callback then
-          callback(nil, obj.stderr)
+          callback(nil, err)
         end
         return
       end

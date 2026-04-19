@@ -21,6 +21,7 @@ local lang_slug_map = {
 }
 
 function M.run_remote(slug, lang, code, callback)
+  require("neocode.ui.results").show_loading("Running tests on LeetCode...")
   local lang_slug = lang_slug_map[lang] or lang
 
   local storage = require("neocode.storage")
@@ -61,6 +62,7 @@ function M.run_remote(slug, lang, code, callback)
 end
 
 function M.submit(slug, lang, code, callback)
+  require("neocode.ui.results").show_loading("Submitting to LeetCode...")
   local lang_slug = lang_slug_map[lang] or lang
 
   local storage = require("neocode.storage")
